@@ -1,15 +1,21 @@
 import express from "express";
 import cors from "cors";
+import { authRouter } from "./src/routes/authRouter.js";
+import { connectDB } from "./src/configs/connectDB.js";
+import { errorMiddleHandle } from "./src/middlewares/errorMiddleware.js";
 
 const app = express();
 
+app.use(express.json());
 app.use(cors());
 
 const PORT = 7820;
 
-app.get("/auth/login", (_req, res) => {
-  res.send(`<h1>Hello users server running on port ${PORT}</h1>`);
-});
+app.use("/auth", authRouter);
+
+app.use(errorMiddleHandle);
+
+connectDB();
 
 app.listen(PORT, (err) => {
   if (err) {
