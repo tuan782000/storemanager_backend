@@ -33,13 +33,13 @@ const register = async (req, res) => {
   });
 
   await newUser.save();
-  const accesstoken = await getJsonWebToken(email, id);
 
   res.status(201).json({
     mess: "Đăng ký thành công",
     data: {
-      ...newUser,
-      accesstoken,
+      email: newUser.email,
+      id: newUser.id,
+      accesstoken: await getJsonWebToken(email, newUser.id),
     },
   });
 };
