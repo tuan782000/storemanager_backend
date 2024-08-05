@@ -15,7 +15,8 @@ const getJsonWebToken = async (email, id) => {
 };
 
 const register = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password, role, username, name, phone, profilePicture } =
+    req.body;
 
   const checkExistingEmail = await UserModel.findOne({ email });
 
@@ -30,6 +31,10 @@ const register = async (req, res) => {
     email,
     password: hashedPassword,
     role,
+    username,
+    name,
+    phone,
+    profilePicture,
   });
 
   await newUser.save();
@@ -39,9 +44,53 @@ const register = async (req, res) => {
     data: {
       email: newUser.email,
       id: newUser.id,
-      accesstoken: await getJsonWebToken(email, newUser.id),
+      role: newUser.role,
+      username: newUser.username,
+      name: newUser.name,
+      phone: newUser.phone,
+      profilePicture: newUser.profilePicture,
     },
   });
 };
 
-export { register };
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const checkExistingEmail = await UserModel.findOne({ email });
+    //   console.log(checkExistingEmail);
+
+    if (!checkExistingEmail) {
+      return res.status(403).json({
+        message: "Vui lòng kiểm tra lại email hoặc password!!!",
+      });
+    }
+
+    const isMatchPassword = await bcrypt.compare(
+      password,
+      checkExistingEmail.password
+    );
+
+    if (!isMatchPassword) {
+      return res.status(401).json({
+        message: "Vui lòng kiểm tra lại email hoặc password!!!",
+      });
+    }
+
+    res.status(200).json({
+      message: "Đăng nhập thành công",
+      data: {
+        id: checkExistingEmail.id,
+        email: checkExistingEmail.email,
+        accesstoken: await getJsonWebToken(email, checkExistingEmail.id),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Đã xảy ra lỗi khi đăng nhập",
+      error: error.message,
+    });
+  }
+};
+
+export { register, login };

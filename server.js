@@ -3,6 +3,7 @@ import cors from "cors";
 import { authRouter } from "./src/routes/authRouter.js";
 import { connectDB } from "./src/configs/connectDB.js";
 import { errorMiddleHandle } from "./src/middlewares/errorMiddleware.js";
+import { userRouter } from "./src/routes/userRouter.js";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(cors());
 const PORT = 7820;
 
 app.use("/auth", authRouter);
+app.use("/user", userRouter);
 
 app.use(errorMiddleHandle);
 
