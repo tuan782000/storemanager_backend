@@ -6,7 +6,10 @@ const getUserWithId = async (req, res) => {
 
   if (id) {
     try {
-      const findUserById = await UserModel.findById(id);
+      const findUserById = await UserModel.findOne({
+        _id: id,
+        isDeleted: false,
+      });
       if (findUserById) {
         res.status(200).json({
           message: "Lấy thông tin người dùng thành công",
@@ -32,7 +35,7 @@ const getUserWithId = async (req, res) => {
 
 const getListUsers = async (req, res) => {
   try {
-    const users = await UserModel.find({ role: "employee" });
+    const users = await UserModel.find({ role: "employee", isDeleted: false });
 
     res.status(200).json({
       message: "Lấy ra danh sách nhân viên thành công",
@@ -141,10 +144,39 @@ const editPassword = async (req, res) => {
   }
 };
 
+const softDeleteUser = async (req, res) => {
+  const { id } = req.query;
+
+  if (id) {
+    try {
+      const deletedUser = await UserModel.findByIdAndUpdate(
+        id,
+        { isDeleted: true, deletedAt: Date.now() },
+        { new: true }
+      );
+
+      res.status(200).json({
+        message: "Xóa người dùng thành công",
+        data: deletedUser,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Lỗi khi xóa người dùng",
+        error: error.message,
+      });
+    }
+  } else {
+    res.status(400).json({
+      message: "ID người dùng không được cung cấp",
+    });
+  }
+};
+
 export {
   getUserWithId,
   editInfoUser,
   editInfoAvatar,
   editPassword,
   getListUsers,
+  softDeleteUser,
 };

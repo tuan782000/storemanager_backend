@@ -35,6 +35,13 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+  },
 });
 
 const UserModel = mongoose.model("users", UserSchema);
