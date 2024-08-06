@@ -1,7 +1,7 @@
 import { UserModel } from "../models/userModel.js";
 import bcrypt from "bcrypt";
 
-const getUser = async (req, res) => {
+const getUserWithId = async (req, res) => {
   const { id } = req.query;
 
   if (id) {
@@ -26,6 +26,21 @@ const getUser = async (req, res) => {
   } else {
     res.status(400).json({
       message: "ID người dùng không được cung cấp",
+    });
+  }
+};
+
+const getListUsers = async (req, res) => {
+  try {
+    const users = await UserModel.find({ role: "employee" });
+
+    res.status(200).json({
+      message: "Lấy ra danh sách nhân viên thành công",
+      data: users,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
     });
   }
 };
@@ -126,4 +141,10 @@ const editPassword = async (req, res) => {
   }
 };
 
-export { getUser, editInfoUser, editInfoAvatar, editPassword };
+export {
+  getUserWithId,
+  editInfoUser,
+  editInfoAvatar,
+  editPassword,
+  getListUsers,
+};
