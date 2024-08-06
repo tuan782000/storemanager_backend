@@ -5,6 +5,7 @@ import { connectDB } from "./src/configs/connectDB.js";
 import { errorMiddleHandle } from "./src/middlewares/errorMiddleware.js";
 import { userRouter } from "./src/routes/userRouter.js";
 import { customerRouter } from "./src/routes/customerRouter.js";
+import { workSessionRouter } from "./src/routes/workSessionRouter.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ const PORT = 7820;
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/customer", customerRouter);
+app.use("/worksession", workSessionRouter);
 
 app.use(errorMiddleHandle);
 
