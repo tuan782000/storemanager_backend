@@ -48,6 +48,45 @@ const getListUsers = async (req, res) => {
   }
 };
 
+const registerUser = async (req, res) => {
+  const { email, password, role, username, name, phone, profilePicture } =
+    req.body;
+
+  const checkExistingEmail = await UserModel.findOne({ email });
+
+  if (checkExistingEmail) {
+    throw new Error("Email này đã tồn tại!!!");
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const newUser = new UserModel({
+    email,
+    password: hashedPassword,
+    role,
+    username,
+    name,
+    phone,
+    profilePicture,
+  });
+
+  await newUser.save();
+
+  res.status(201).json({
+    mess: "Đăng ký thành công",
+    data: {
+      email: newUser.email,
+      id: newUser.id,
+      role: newUser.role,
+      username: newUser.username,
+      name: newUser.name,
+      phone: newUser.phone,
+      profilePicture: newUser.profilePicture,
+    },
+  });
+};
+
 const editInfoUser = async (req, res) => {
   const { id } = req.query;
   const { name, phone } = req.body;
@@ -175,6 +214,7 @@ const softDeleteUser = async (req, res) => {
 export {
   getUserWithId,
   editInfoUser,
+  registerUser,
   editInfoAvatar,
   editPassword,
   getListUsers,
