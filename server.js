@@ -6,6 +6,8 @@ import { errorMiddleHandle } from "./src/middlewares/errorMiddleware.js";
 import { userRouter } from "./src/routes/userRouter.js";
 import { customerRouter } from "./src/routes/customerRouter.js";
 import { workSessionRouter } from "./src/routes/workSessionRouter.js";
+import { commentRouter } from "./src/routes/commentRouter.js";
+import { maintenanceScheduleRouter } from "./src/routes/maintenanceScheduleRouter.js";
 
 const app = express();
 
@@ -18,8 +20,9 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/customer", customerRouter);
 app.use("/worksession", workSessionRouter);
-app.use("/comment", workSessionRouter);
-app.use("/maintenanceSchedule", workSessionRouter);
+app.use("/comment", commentRouter);
+app.use("/maintenanceSchedule", maintenanceScheduleRouter);
+// app.use("/maintenanceSchedule", maintenanceScheduleRouter);
 
 app.use(errorMiddleHandle);
 

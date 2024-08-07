@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 dotenv.config();
 
 // const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@dienlanhvn2407.xanvnbu.mongodb.net/`;
-const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@dienlanhvn2407.xanvnbu.mongodb.net/?retryWrites=true&w=majority&appName=Dienlanhvn2407`;
+const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@dienlanhvn2407.xanvnbu.mongodb.net/${process.env.DATABASE_NAME}?retryWrites=true&w=majority&appName=Dienlanhvn2407`;
 
 const connectDB = async () => {
   try {

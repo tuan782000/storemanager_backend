@@ -5,7 +5,7 @@ import {
   getMaintenanceScheduleById,
   softDeleteMaintenanceSchedule,
   updateMaintenanceSchedule,
-} from "../controllers/maintenanceScheduleController";
+} from "../controllers/maintenanceScheduleController.js";
 
 const maintenanceScheduleRouter = express.Router();
 
