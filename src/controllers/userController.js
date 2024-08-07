@@ -12,23 +12,23 @@ const getUserWithId = async (req, res) => {
       });
       if (findUserById) {
         res.status(200).json({
-          message: "Lấy thông tin người dùng thành công",
+          message: "Lấy thông tin nhân viên thành công",
           data: findUserById,
         });
       } else {
         res.status(404).json({
-          message: "Không tìm thấy người dùng với ID này",
+          message: "Không tìm thấy nhân viên với ID này",
         });
       }
     } catch (error) {
       res.status(500).json({
-        message: "Lỗi khi lấy thông tin người dùng",
+        message: "Lỗi khi lấy thông tin nhân viên",
         error: error.message,
       });
     }
   } else {
     res.status(400).json({
-      message: "ID người dùng không được cung cấp",
+      message: "ID nhân viên không được cung cấp",
     });
   }
 };
@@ -94,23 +94,29 @@ const editInfoUser = async (req, res) => {
   if (id) {
     try {
       const updateUser = await UserModel.findByIdAndUpdate(
-        id,
+        { _id: id, isDeleted: false },
         { name, phone }, // Chỉ cập nhật các trường này
         { new: true } // Trả về tài liệu đã cập nhật
       );
-      res.status(200).json({
-        message: "Cập nhật thông tin người dùng thành công",
-        data: updateUser,
-      });
+      if (updateUser) {
+        res.status(200).json({
+          message: "Cập nhật thông tin nhân viên thành công",
+          data: updateUser,
+        });
+      } else {
+        res.status(404).json({
+          message: "Nhân viên không tồn tại hoặc đã bị xóa",
+        });
+      }
     } catch (error) {
       res.status(500).json({
-        message: "Lỗi khi lấy thông tin người dùng",
+        message: "Lỗi khi lấy thông tin nhân viên",
         error: error.message,
       });
     }
   } else {
     res.status(400).json({
-      message: "ID người dùng không được cung cấp",
+      message: "ID nhân viên không được cung cấp",
     });
   }
 };
@@ -122,23 +128,31 @@ const editInfoAvatar = async (req, res) => {
   if (id) {
     try {
       const updateAvatarUser = await UserModel.findByIdAndUpdate(
-        id,
+        { _id: id, isDeleted: false },
         { profilePicture }, // Chỉ cập nhật các trường này
         { new: true } // Trả về tài liệu đã cập nhật
       );
-      res.status(200).json({
-        message: "Cập nhật ảnh đại diện thành công",
-        data: updateAvatarUser,
-      });
+
+      if (updateAvatarUser) {
+        res.status(200).json({
+          message: "Cập nhật ảnh đại diện thành công",
+          data: updateAvatarUser,
+        });
+      } else {
+        res.status(404).json({
+          message:
+            "Cập nhật ảnh đại diện không thành công, vì nhân viên không tồn tại hoặc đã bị xoá",
+        });
+      }
     } catch (error) {
       res.status(500).json({
-        message: "Lỗi khi lấy thông tin người dùng",
+        message: "Lỗi khi lấy thông tin nhân viên",
         error: error.message,
       });
     }
   } else {
     res.status(400).json({
-      message: "ID người dùng không được cung cấp",
+      message: "ID nhân viên không được cung cấp",
     });
   }
 };
@@ -159,20 +173,26 @@ const editPassword = async (req, res) => {
 
     if (id) {
       const updatedPassword = await UserModel.findByIdAndUpdate(
-        id,
+        { _id: id, isDeleted: false },
         {
           password: hashedNewPassword,
         },
         { new: true }
       );
-      res.status(200).json({
-        message: "Cập nhật mật khẩu thành công",
-        // Không nên trả về password đã hash trong response
-        data: { id: updatedPassword._id, username: updatedPassword.username },
-      });
+      if (updatedPassword) {
+        res.status(200).json({
+          message: "Cập nhật mật khẩu thành công",
+          // Không nên trả về password đã hash trong response
+          data: { id: updatedPassword._id, username: updatedPassword.username },
+        });
+      } else {
+        res.status(404).json({
+          message: "Nhân viên không tồn tại hoặc đã bị xóa",
+        });
+      }
     } else {
       res.status(400).json({
-        message: "ID người dùng không được cung cấp",
+        message: "ID nhân viên không được cung cấp",
       });
     }
   } catch (error) {
@@ -195,18 +215,18 @@ const softDeleteUser = async (req, res) => {
       );
 
       res.status(200).json({
-        message: "Xóa người dùng thành công",
+        message: "Xóa nhân viên thành công",
         data: deletedUser,
       });
     } catch (error) {
       res.status(500).json({
-        message: "Lỗi khi xóa người dùng",
+        message: "Lỗi khi xóa nhân viên",
         error: error.message,
       });
     }
   } else {
     res.status(400).json({
-      message: "ID người dùng không được cung cấp",
+      message: "ID nhân viên không được cung cấp",
     });
   }
 };

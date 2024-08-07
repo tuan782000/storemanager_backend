@@ -52,6 +52,7 @@ const getCustomerById = async (req, res) => {
     try {
       const findCustomerById = await CustomerModel.findOne({
         _id: id,
+        isDeleted: false,
       });
       if (findCustomerById) {
         res.status(200).json({
@@ -83,14 +84,21 @@ const editCustomerById = async (req, res) => {
   if (id) {
     try {
       const updateCustomer = await CustomerModel.findByIdAndUpdate(
-        id,
+        { _id: id, isDeleted: false },
         { email, name, phone, address }, // Chỉ cập nhật các trường này
         { new: true } // Trả về tài liệu đã cập nhật)
       );
-      res.status(200).json({
-        message: "Cập nhật thông tin khách hàng thành công",
-        data: updateCustomer,
-      });
+
+      if (updateCustomer) {
+        res.status(200).json({
+          message: "Cập nhật thông tin khách hàng thành công",
+          data: updateCustomer,
+        });
+      } else {
+        res.status(404).json({
+          message: "Khách hàng không tồn tại hoặc đã bị xóa",
+        });
+      }
     } catch (error) {
       res.status(500).json({
         message: "Lỗi khi lấy thông tin khách hàng",
