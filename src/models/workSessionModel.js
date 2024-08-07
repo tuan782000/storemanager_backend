@@ -76,8 +76,24 @@ const WorkSessionSchema = new mongoose.Schema({
   deletedAt: {
     type: Date,
   },
+  maintenance_schedule: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "MaintenanceSchedule",
+  },
+  comments: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Comment",
+  },
+  //   maintenance_schedule: [{
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: 'MaintenanceSchedule',
+  //   }],
+  //   comments: [{
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: 'Comment',
+  //   }],
 });
 
-const WorkSessionModel = mongoose.model("WorkSessions", WorkSessionSchema);
+const WorkSessionModel = mongoose.model("workSessions", WorkSessionSchema);
 
 export { WorkSessionModel };

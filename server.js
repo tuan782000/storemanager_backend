@@ -18,6 +18,8 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/customer", customerRouter);
 app.use("/worksession", workSessionRouter);
+app.use("/comment", workSessionRouter);
+app.use("/maintenanceSchedule", workSessionRouter);
 
 app.use(errorMiddleHandle);
 

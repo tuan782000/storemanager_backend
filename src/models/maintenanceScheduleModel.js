@@ -1,23 +1,22 @@
 import mongoose from "mongoose";
 
-const CommentSchema = new mongoose.Schema({
+const MaintenanceScheduleSchema = new mongoose.Schema({
   customer_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
     required: true,
   },
-  employee_id: {
+  work_session_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "WorkSession",
     required: true,
   },
-  comment: {
-    type: String,
-    required: true,
-  },
-  date: {
+  scheduled_date: {
     type: Date,
-    default: Date.now,
+    required: true,
+  },
+  notes: {
+    type: String,
   },
   created_at: {
     type: Date,
@@ -29,6 +28,9 @@ const CommentSchema = new mongoose.Schema({
   },
 });
 
-const CommentModel = mongoose.model("comments", CommentSchema);
+const MaintenanceScheduleModel = mongoose.model(
+  "maintenanceSchedules",
+  MaintenanceScheduleSchema
+);
 
-export { CommentModel };
+export { MaintenanceScheduleModel };
