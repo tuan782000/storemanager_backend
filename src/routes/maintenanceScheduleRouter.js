@@ -2,6 +2,7 @@ import express from "express";
 import {
   createMaintenanceSchedule,
   getMaintenanceSchedule,
+  getMaintenanceScheduleById,
   softDeleteMaintenanceSchedule,
   updateMaintenanceSchedule,
 } from "../controllers/maintenanceScheduleController";
@@ -16,6 +17,12 @@ maintenanceScheduleRouter.get(
   "/getMaintenanceSchedule",
   getMaintenanceSchedule
 );
+
+maintenanceScheduleRouter.get(
+  "/maintenanceScheduleById/:id",
+  getMaintenanceScheduleById
+);
+
 maintenanceScheduleRouter.put(
   "/putMaintenanceSchedule",
   updateMaintenanceSchedule
