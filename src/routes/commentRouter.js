@@ -8,8 +8,8 @@ import {
 
 const commentRouter = express.Router();
 
-commentRouter.post("/createComment", getComment);
-commentRouter.get("/getComment", createComment);
+commentRouter.post("/createComment", createComment);
+commentRouter.get("/getComment", getComment);
 commentRouter.put("/putComment", updateComment);
 commentRouter.delete("/softDeleteComment", softDeleteComment);
 
