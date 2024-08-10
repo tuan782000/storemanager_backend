@@ -3,21 +3,19 @@ import mongoose from "mongoose";
 const WorkSessionSchema = new mongoose.Schema({
   customer_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Customer",
+    ref: "customers",
     required: true,
   },
   employee_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
   },
   start_time: {
     type: Date,
-    default: null,
   },
   end_time: {
     type: Date,
-    default: null,
   },
   result: {
     type: String,
@@ -43,12 +41,7 @@ const WorkSessionSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  maintenance_schedule: {
-    // lịch bảo trì
-    type: Date,
-    default: null,
-  },
-  task_description: {
+  description: {
     type: String,
     required: true,
   },
@@ -78,7 +71,7 @@ const WorkSessionSchema = new mongoose.Schema({
   },
   maintenance_schedule: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "MaintenanceSchedule",
+    ref: "maintenanceSchedules",
   },
   comments: {
     type: mongoose.Schema.Types.ObjectId,

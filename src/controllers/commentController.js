@@ -3,6 +3,7 @@ import { WorkSessionModel } from "../models/workSessionModel.js";
 
 const getComment = async (req, res) => {
   const { work_session_id } = req.query;
+  console.log(work_session_id);
 
   if (!work_session_id) {
     return res.status(400).json({
@@ -12,11 +13,11 @@ const getComment = async (req, res) => {
 
   try {
     // Tìm các comment liên quan đến work_session_id
-    const workSession = await WorkSessionModel.findById(
-      work_session_id
-    ).populate("comments");
+    const comment = await CommentModel.find({
+      work_session_id: work_session_id,
+    });
 
-    if (!workSession) {
+    if (!comment) {
       return res.status(404).json({
         message: "Không tìm thấy phiên làm việc với ID này",
       });
@@ -24,7 +25,7 @@ const getComment = async (req, res) => {
 
     res.status(200).json({
       message: "Lấy ra danh sách nhận xét thành công",
-      data: workSession.comments,
+      data: comment,
     });
   } catch (error) {
     res.status(500).json({
@@ -48,6 +49,7 @@ const createComment = async (req, res) => {
     const newComment = new CommentModel({
       customer_id,
       employee_id,
+      work_session_id,
       comment,
       date,
     });

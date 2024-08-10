@@ -3,6 +3,7 @@ import {
   createWorkSession,
   getListWorkSession,
   getWorkSessionById,
+  getWorkSessionsByEmployeeId,
   softDeleteWorkSession,
   updateWorkSession,
 } from "../controllers/workSessionController.js";
@@ -14,5 +15,9 @@ workSessionRouter.get("/listWorkSessions", getListWorkSession);
 workSessionRouter.get("/workSessionById", getWorkSessionById);
 workSessionRouter.put("/updatedWorkSessionById", updateWorkSession);
 workSessionRouter.delete("/softDeleteWorkSessionById", softDeleteWorkSession);
+workSessionRouter.get(
+  "/getWorkSessionsByEmployeeId",
+  getWorkSessionsByEmployeeId
+);
 
 export { workSessionRouter };

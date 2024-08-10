@@ -3,12 +3,17 @@ import mongoose from "mongoose";
 const CommentSchema = new mongoose.Schema({
   customer_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Customer",
+    ref: "customers",
     required: true,
   },
   employee_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
+    required: true,
+  },
+  work_session_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "workSessions",
     required: true,
   },
   comment: {

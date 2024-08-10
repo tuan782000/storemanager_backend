@@ -57,7 +57,10 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const checkExistingEmail = await UserModel.findOne({ email });
+    const checkExistingEmail = await UserModel.findOne({
+      email,
+      isDeleted: false,
+    });
     //   console.log(checkExistingEmail);
 
     if (!checkExistingEmail) {

@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 const MaintenanceScheduleSchema = new mongoose.Schema({
   customer_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Customer",
+    ref: "customers",
     required: true,
   },
   work_session_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "WorkSession",
+    ref: "workSessions",
     required: true,
   },
   scheduled_date: {

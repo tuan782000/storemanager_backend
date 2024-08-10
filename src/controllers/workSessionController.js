@@ -59,7 +59,7 @@ const createWorkSession = async (req, res) => {
     before_images = [],
     after_images = [],
     maintenance_schedule = null,
-    task_description,
+    description,
   } = req.body;
 
   const payment_amount = amount * 0.3;
@@ -76,7 +76,7 @@ const createWorkSession = async (req, res) => {
       before_images,
       after_images,
       maintenance_schedule,
-      task_description,
+      description,
       status: "assigned",
       rejection_reason: null,
       created_at: new Date(),
@@ -111,7 +111,7 @@ const updateWorkSession = async (req, res) => {
     before_images,
     after_images,
     maintenance_schedule,
-    task_description,
+    description,
   } = req.body;
 
   const payment_amount = amount * 0.3;
@@ -131,7 +131,7 @@ const updateWorkSession = async (req, res) => {
           before_images,
           after_images,
           maintenance_schedule,
-          task_description,
+          description,
         },
         { new: true }
       );
@@ -187,10 +187,44 @@ const softDeleteWorkSession = async (req, res) => {
   }
 };
 
+const getWorkSessionsByEmployeeId = async (req, res) => {
+  const { employee_id } = req.query;
+
+  if (employee_id) {
+    try {
+      const workSessions = await WorkSessionModel.find({
+        employee_id,
+        isDeleted: false,
+      });
+
+      if (workSessions.length > 0) {
+        res.status(200).json({
+          message: "Lấy danh sách phiên làm việc thành công",
+          data: workSessions,
+        });
+      } else {
+        res.status(404).json({
+          message: "Không tìm thấy phiên làm việc với employee_id này",
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "Lỗi khi lấy danh sách phiên làm việc",
+        error: error.message,
+      });
+    }
+  } else {
+    res.status(400).json({
+      message: "employee_id không được cung cấp",
+    });
+  }
+};
+
 export {
   getWorkSessionById,
   getListWorkSession,
   createWorkSession,
   updateWorkSession,
   softDeleteWorkSession,
+  getWorkSessionsByEmployeeId,
 };
