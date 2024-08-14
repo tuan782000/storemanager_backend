@@ -6,6 +6,11 @@ const MaintenanceScheduleSchema = new mongoose.Schema({
     ref: "customers",
     required: true,
   },
+  employee_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
+  },
   work_session_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "workSessions",
@@ -25,6 +30,13 @@ const MaintenanceScheduleSchema = new mongoose.Schema({
   updated_at: {
     type: Date,
     default: Date.now,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
   },
 });
 

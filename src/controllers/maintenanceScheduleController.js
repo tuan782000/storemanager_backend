@@ -1,10 +1,13 @@
 import { MaintenanceScheduleModel } from "../models/maintenanceScheduleModel.js";
+import { WorkSessionModel } from "../models/workSessionModel.js";
 
 const getMaintenanceSchedule = async (req, res) => {
   try {
     const schedules = await MaintenanceScheduleModel.find({
       isDeleted: false,
     });
+
+    console.log(schedules);
 
     if (schedules) {
       res.status(200).json({
@@ -26,17 +29,21 @@ const getMaintenanceSchedule = async (req, res) => {
 };
 
 const createMaintenanceSchedule = async (req, res) => {
-  const { customer_id, work_session_id, scheduled_date, notes } = req.body;
+  const { employee_id, customer_id, work_session_id, scheduled_date, notes } =
+    req.body;
 
-  if (!customer_id || !work_session_id || !scheduled_date) {
+  if (
+    (!employee_id || !customer_id || !work_session_id || !scheduled_date,
+    !notes)
+  ) {
     return res.status(400).json({
-      message:
-        "Các trường customer_id, work_session_id, và scheduled_date là bắt buộc",
+      message: "Phải điền đầy đủ thông tin",
     });
   }
 
   try {
     const newSchedule = new MaintenanceScheduleModel({
+      employee_id,
       customer_id,
       work_session_id,
       scheduled_date,
@@ -44,6 +51,13 @@ const createMaintenanceSchedule = async (req, res) => {
     });
 
     await newSchedule.save();
+
+    // Cập nhật WorkSession để thêm comment vào danh sách comments
+    await WorkSessionModel.findByIdAndUpdate(
+      work_session_id,
+      { $push: { maintenance_schedule: newSchedule._id } },
+      { new: true }
+    );
 
     res.status(201).json({
       message: "Tạo lịch bảo trì thành công",
@@ -162,10 +176,80 @@ const softDeleteMaintenanceSchedule = async (req, res) => {
   }
 };
 
+const getMaintenanceScheduleByEmployeeId = async (req, res) => {
+  const { employee_id } = req.query;
+
+  if (employee_id) {
+    try {
+      const schedules = await MaintenanceScheduleModel.find({
+        employee_id,
+        isDeleted: false,
+      });
+
+      if (schedules.length > 0) {
+        res.status(200).json({
+          message: "Lấy danh sách lịch bảo trì thành công",
+          data: schedules,
+        });
+      } else {
+        res.status(404).json({
+          message: "Không tìm thấy lịch bảo trì với employee_id này",
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "Lỗi khi lấy danh sách lịch bảo trì",
+        error: error.message,
+      });
+    }
+  } else {
+    res.status(400).json({
+      message: "employee_id không được cung cấp",
+    });
+  }
+};
+
+const checkMaintanceSchedule = async (req, res) => {
+  const { employee_id, customer_id, work_session_id } = req.body;
+
+  if ((employee_id, customer_id, work_session_id)) {
+    try {
+      const schedule = await MaintenanceScheduleModel.find({
+        employee_id: employee_id,
+        customer_id: customer_id,
+        work_session_id: work_session_id,
+        isDeleted: false,
+      });
+
+      if (schedule.length > 0) {
+        res.status(200).json({
+          message: "Lấy lịch bảo trì thành công",
+          data: schedule,
+        });
+      } else {
+        res.status(404).json({
+          message: "Không tìm thấy lịch bảo trì với employee_id này",
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "Lỗi khi lấy danh sách lịch bảo trì",
+        error: error.message,
+      });
+    }
+  } else {
+    res.status(400).json({
+      message: "employee_id, customer_id, workSession_id không được cung cấp",
+    });
+  }
+};
+
 export {
   getMaintenanceSchedule,
   createMaintenanceSchedule,
   updateMaintenanceSchedule,
   softDeleteMaintenanceSchedule,
   getMaintenanceScheduleById,
+  getMaintenanceScheduleByEmployeeId,
+  checkMaintanceSchedule,
 };

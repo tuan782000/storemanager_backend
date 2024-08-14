@@ -1,20 +1,35 @@
 import { CommentModel } from "../models/commentModel.js";
 import { WorkSessionModel } from "../models/workSessionModel.js";
 
-const getComment = async (req, res) => {
-  const { work_session_id } = req.query;
-  console.log(work_session_id);
+const getAllComment = async (req, res) => {
+  try {
+    const listComment = await CommentModel.find();
 
-  if (!work_session_id) {
+    res.status(200).json({
+      message: "Lấy ra danh sách nhận xét thành công",
+      data: listComment,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Lỗi khi lấy danh sách nhận xét",
+      error: error.message,
+    });
+  }
+};
+
+const getComment = async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
     return res.status(400).json({
       message: "ID phiên làm việc không được cung cấp",
     });
   }
 
   try {
-    // Tìm các comment liên quan đến work_session_id
+    // Tìm các comment liên quan đến id
     const comment = await CommentModel.find({
-      work_session_id: work_session_id,
+      _id: id,
     });
 
     if (!comment) {
@@ -36,7 +51,7 @@ const getComment = async (req, res) => {
 };
 
 const createComment = async (req, res) => {
-  const { comment, date, customer_id, employee_id, work_session_id } = req.body;
+  const { comment, customer_id, employee_id, work_session_id } = req.body;
 
   if (!customer_id || !employee_id || !work_session_id || !comment) {
     return res.status(400).json({
@@ -51,7 +66,6 @@ const createComment = async (req, res) => {
       employee_id,
       work_session_id,
       comment,
-      date,
     });
 
     // Lưu comment vào cơ sở dữ liệu
@@ -123,4 +137,10 @@ const updateComment = async (req, res) => {
 
 const softDeleteComment = async (req, res) => {};
 
-export { getComment, createComment, updateComment, softDeleteComment };
+export {
+  getComment,
+  createComment,
+  updateComment,
+  softDeleteComment,
+  getAllComment,
+};

@@ -31,12 +31,12 @@ const WorkSessionSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  before_image: {
+  before_images: {
     // nó có thể là danh sách các ảnh trước khi làm
     type: [String],
     default: [],
   },
-  after_image: {
+  after_images: {
     // nó có thể là danh sách các ảnh sau khi làm
     type: [String],
     default: [],
@@ -47,7 +47,7 @@ const WorkSessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["assigned", "accepted", "rejected", "completed"],
+    enum: ["assigned", "accepted", "pending", "rejected", "completed"],
     default: "assigned",
   },
   rejection_reason: {

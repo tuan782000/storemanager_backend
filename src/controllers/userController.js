@@ -1,5 +1,6 @@
 import { UserModel } from "../models/userModel.js";
 import bcrypt from "bcrypt";
+import { WorkSessionModel } from "../models/workSessionModel.js";
 
 const getUserWithId = async (req, res) => {
   const { id } = req.query;
@@ -231,6 +232,153 @@ const softDeleteUser = async (req, res) => {
   }
 };
 
+// const getMoneyUserEarn = async (req, res) => {
+//   const { id } = req.query;
+
+//   if (id) {
+//     try {
+//       const user = await UserModel.findById(id);
+
+//       console.log(user);
+
+//       if (!user) {
+//         return res.status(404).json({
+//           message: "Người dùng không tồn tại",
+//         });
+//       }
+
+//       const role = user.role;
+
+//       console.log(role);
+
+//       // nếu là nhân viên payment_amount - còn admin sẽ là amount
+//       // Determine the field to sum and the multiplier based on the role
+//       let fieldToSum;
+//       let multiplier;
+
+//       if (role === "employee") {
+//         fieldToSum = "payment_amount";
+//         multiplier = 1; // Employees get 100% of payment_amount
+//       } else if (role === "admin") {
+//         fieldToSum = "amount";
+//         multiplier = 0.7; // Admins get 70% of the amount
+//       }
+
+//       console.log(fieldToSum, multiplier);
+
+//       const userEarnings = await WorkSessionModel.aggregate([
+//         {
+//           $match: {
+//             employee_id: mongoose.Types.ObjectId(id),
+//             status: "completed",
+//             isDeleted: false,
+//           },
+//         },
+//         {
+//           $group: {
+//             _id: null,
+//             totalEarnings: {
+//               $sum: { $multiply: [`$${fieldToSum}`, multiplier] },
+//             },
+//           },
+//         },
+//       ]);
+
+//       console.log(userEarnings);
+
+//       const totalEarnings =
+//         userEarnings.length > 0 ? userEarnings[0].totalEarnings : 0;
+
+//       res.status(200).json({
+//         message: "Tính toán thu nhập thành công",
+//         totalEarnings,
+//       });
+
+//       // const userEarnings = await WorkSessionModel.aggregate([]);
+//     } catch (error) {
+//       res.status(500).json({
+//         message: "Đã có lỗi xảy ra",
+//         error: error.message,
+//       });
+//     }
+//   } else {
+//     res.status(400).json({
+//       message: "ID nhân viên không được cung cấp",
+//     });
+//   }
+// };
+
+const getMoneyUserEarn = async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "ID nhân viên không được cung cấp",
+    });
+  }
+
+  try {
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Người dùng không tồn tại",
+      });
+    }
+
+    const role = user.role;
+    let fieldToSum, multiplier, matchCondition;
+
+    console.log(user, role, fieldToSum, multiplier, matchCondition);
+
+    if (role === "employee") {
+      fieldToSum = "payment_amount";
+      multiplier = 1; // Employees get 100% of payment_amount
+      matchCondition = {
+        employee_id: id,
+        status: "completed",
+        isDeleted: false,
+      };
+    } else if (role === "admin") {
+      fieldToSum = "amount";
+      multiplier = 0.7; // Admins get 70% of the amount
+      matchCondition = {
+        status: "completed",
+        isDeleted: false,
+      };
+    }
+
+    console.log(user, role, fieldToSum, multiplier, matchCondition);
+
+    const userEarnings = await WorkSessionModel.aggregate([
+      {
+        $match: matchCondition,
+      },
+      {
+        $group: {
+          _id: null,
+          totalEarnings: {
+            $sum: { $multiply: [`$${fieldToSum}`, multiplier] },
+          },
+        },
+      },
+    ]);
+
+    const totalEarnings =
+      userEarnings.length > 0 ? userEarnings[0].totalEarnings : 0;
+
+    res.status(200).json({
+      message: "Tính toán thu nhập thành công",
+      totalEarnings,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Đã có lỗi xảy ra",
+      error: error.message,
+    });
+  }
+};
+
 export {
   getUserWithId,
   editInfoUser,
@@ -239,4 +387,5 @@ export {
   editPassword,
   getListUsers,
   softDeleteUser,
+  getMoneyUserEarn,
 };

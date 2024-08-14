@@ -1,7 +1,9 @@
 import express from "express";
 import {
+  checkMaintanceSchedule,
   createMaintenanceSchedule,
   getMaintenanceSchedule,
+  getMaintenanceScheduleByEmployeeId,
   getMaintenanceScheduleById,
   softDeleteMaintenanceSchedule,
   updateMaintenanceSchedule,
@@ -30,6 +32,14 @@ maintenanceScheduleRouter.put(
 maintenanceScheduleRouter.delete(
   "/softDeleteMaintenanceSchedule",
   softDeleteMaintenanceSchedule
+);
+maintenanceScheduleRouter.get(
+  "/getMaintenanceScheduleByEmployeeId",
+  getMaintenanceScheduleByEmployeeId
+);
+maintenanceScheduleRouter.post(
+  "/checkMaintanceSchedule",
+  checkMaintanceSchedule
 );
 
 export { maintenanceScheduleRouter };

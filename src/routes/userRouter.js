@@ -4,6 +4,7 @@ import {
   editInfoUser,
   editPassword,
   getListUsers,
+  getMoneyUserEarn,
   getUserWithId,
   registerUser,
   softDeleteUser,
@@ -18,5 +19,6 @@ userRouter.put("/editInfoUser", editInfoUser);
 userRouter.put("/editInfoAvatar", editInfoAvatar);
 userRouter.put("/editPassword", editPassword);
 userRouter.delete("/deleteEmployee", softDeleteUser);
+userRouter.get("/getMoneyUserEarn", getMoneyUserEarn);
 
 export { userRouter };

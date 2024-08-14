@@ -107,14 +107,15 @@ const updateWorkSession = async (req, res) => {
     start_time,
     end_time,
     result,
-    amount,
     before_images,
     after_images,
     maintenance_schedule,
     description,
+    status,
   } = req.body;
 
-  const payment_amount = amount * 0.3;
+  console.log(id);
+  console.log(result, status);
 
   if (id) {
     try {
@@ -126,15 +127,16 @@ const updateWorkSession = async (req, res) => {
           start_time,
           end_time,
           result,
-          amount,
-          payment_amount,
           before_images,
           after_images,
           maintenance_schedule,
           description,
+          status,
         },
         { new: true }
       );
+
+      console.log(updateWorkSession);
 
       if (updateWorkSession) {
         res.status(200).json({
