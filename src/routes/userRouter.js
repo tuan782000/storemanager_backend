@@ -5,6 +5,9 @@ import {
   editPassword,
   getListUsers,
   getMoneyUserEarn,
+  getMonthlyEarningAmounts,
+  getMonthlyEarningPaymentAmounts,
+  getMonthlyEarnings,
   getUserWithId,
   registerUser,
   softDeleteUser,
@@ -20,5 +23,11 @@ userRouter.put("/editInfoAvatar", editInfoAvatar);
 userRouter.put("/editPassword", editPassword);
 userRouter.delete("/deleteEmployee", softDeleteUser);
 userRouter.get("/getMoneyUserEarn", getMoneyUserEarn);
+userRouter.get("/getMonthlyEarnings", getMonthlyEarnings);
+userRouter.get("/getMonthlyEarningAmounts", getMonthlyEarningAmounts);
+userRouter.get(
+  "/getMonthlyEarningPaymentAmounts",
+  getMonthlyEarningPaymentAmounts
+);
 
 export { userRouter };

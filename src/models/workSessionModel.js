@@ -22,12 +22,10 @@ const WorkSessionSchema = new mongoose.Schema({
     default: null,
   },
   amount: {
-    // Số tiền của công việc, yêu cầu phải có
     type: Number,
     required: true,
   },
   payment_amount: {
-    // Số tiền mà nhân viên nhận được (30% của amount), yêu cầu phải có.
     type: Number,
     required: true,
   },

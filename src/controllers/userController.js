@@ -1,6 +1,7 @@
 import { UserModel } from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import { WorkSessionModel } from "../models/workSessionModel.js";
+import _ from "lodash";
 
 const getUserWithId = async (req, res) => {
   const { id } = req.query;
@@ -168,6 +169,12 @@ const editPassword = async (req, res) => {
     });
   }
 
+  if (password.length < 6) {
+    return res.status(403).json({
+      message: "Password không được nhỏ hơn 6 ký tự",
+    });
+  }
+
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedNewPassword = await bcrypt.hash(password, salt);
@@ -232,82 +239,6 @@ const softDeleteUser = async (req, res) => {
   }
 };
 
-// const getMoneyUserEarn = async (req, res) => {
-//   const { id } = req.query;
-
-//   if (id) {
-//     try {
-//       const user = await UserModel.findById(id);
-
-//       console.log(user);
-
-//       if (!user) {
-//         return res.status(404).json({
-//           message: "Người dùng không tồn tại",
-//         });
-//       }
-
-//       const role = user.role;
-
-//       console.log(role);
-
-//       // nếu là nhân viên payment_amount - còn admin sẽ là amount
-//       // Determine the field to sum and the multiplier based on the role
-//       let fieldToSum;
-//       let multiplier;
-
-//       if (role === "employee") {
-//         fieldToSum = "payment_amount";
-//         multiplier = 1; // Employees get 100% of payment_amount
-//       } else if (role === "admin") {
-//         fieldToSum = "amount";
-//         multiplier = 0.7; // Admins get 70% of the amount
-//       }
-
-//       console.log(fieldToSum, multiplier);
-
-//       const userEarnings = await WorkSessionModel.aggregate([
-//         {
-//           $match: {
-//             employee_id: mongoose.Types.ObjectId(id),
-//             status: "completed",
-//             isDeleted: false,
-//           },
-//         },
-//         {
-//           $group: {
-//             _id: null,
-//             totalEarnings: {
-//               $sum: { $multiply: [`$${fieldToSum}`, multiplier] },
-//             },
-//           },
-//         },
-//       ]);
-
-//       console.log(userEarnings);
-
-//       const totalEarnings =
-//         userEarnings.length > 0 ? userEarnings[0].totalEarnings : 0;
-
-//       res.status(200).json({
-//         message: "Tính toán thu nhập thành công",
-//         totalEarnings,
-//       });
-
-//       // const userEarnings = await WorkSessionModel.aggregate([]);
-//     } catch (error) {
-//       res.status(500).json({
-//         message: "Đã có lỗi xảy ra",
-//         error: error.message,
-//       });
-//     }
-//   } else {
-//     res.status(400).json({
-//       message: "ID nhân viên không được cung cấp",
-//     });
-//   }
-// };
-
 const getMoneyUserEarn = async (req, res) => {
   const { id } = req.query;
 
@@ -326,50 +257,315 @@ const getMoneyUserEarn = async (req, res) => {
       });
     }
 
-    const role = user.role;
-    let fieldToSum, multiplier, matchCondition;
+    // Lấy ra danh sách công việc đã hoàn thành dựa vào role - dựa vào id của user
+    let listWorkCompleted;
 
-    console.log(user, role, fieldToSum, multiplier, matchCondition);
+    if (user.role === "admin") {
+      listWorkCompleted = await WorkSessionModel.find({
+        status: "completed",
+        isDeleted: false,
+      });
 
-    if (role === "employee") {
-      fieldToSum = "payment_amount";
-      multiplier = 1; // Employees get 100% of payment_amount
-      matchCondition = {
+      // Một vấn đề cần phải hỏi lại - người ta xoá cái đơn hoàn thành rồi thì có tính tổng tiền của cái đó không
+      // hiện tại đang làm là không tính. - kể cả admin và user
+
+      // tổng tiền cho admin
+      const totalEarnings = _.sumBy(
+        listWorkCompleted,
+        (work) => work.amount - work.payment_amount
+      );
+
+      res.status(200).json({
+        message: "Tính toán thu nhập thành công",
+        data: totalEarnings,
+        // completedWorks: listWorkCompleted
+      });
+    } else if (user.role === "employee") {
+      listWorkCompleted = await WorkSessionModel.find({
         employee_id: id,
         status: "completed",
         isDeleted: false,
-      };
-    } else if (role === "admin") {
-      fieldToSum = "amount";
-      multiplier = 0.7; // Admins get 70% of the amount
-      matchCondition = {
-        status: "completed",
-        isDeleted: false,
-      };
+      });
+
+      // Tính tổng tiền cho employee
+      const totalEarnings = _.sumBy(listWorkCompleted, "payment_amount");
+
+      res.status(200).json({
+        message: "Tính toán thu nhập thành công",
+        data: totalEarnings,
+        // completedWorks: listWorkCompleted
+      });
+    } else {
+      return res.status(403).json({
+        message: "Bạn không có quyền truy cập thông tin này",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Đã có lỗi xảy ra",
+      error: error.message,
+    });
+  }
+};
+
+// Nhược điểm của này các đơn có tạng thái hoàn thành thì xoá nó sẽ không được tính vào
+const getMonthlyEarnings = async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "ID nhân viên không được cung cấp",
+    });
+  }
+
+  try {
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Người dùng không tồn tại",
+      });
     }
 
-    console.log(user, role, fieldToSum, multiplier, matchCondition);
+    const currentYear = new Date().getFullYear();
+    const earningsByMonth = [];
 
-    const userEarnings = await WorkSessionModel.aggregate([
-      {
-        $match: matchCondition,
-      },
-      {
-        $group: {
-          _id: null,
-          totalEarnings: {
-            $sum: { $multiply: [`$${fieldToSum}`, multiplier] },
+    for (let month = 0; month < 12; month++) {
+      const startDate = new Date(currentYear, month, 1);
+      const endDate = new Date(currentYear, month + 1, 1);
+
+      let listWorkCompleted;
+
+      if (user.role === "admin") {
+        listWorkCompleted = await WorkSessionModel.find({
+          status: "completed",
+          isDeleted: false,
+          created_at: {
+            $gte: startDate,
+            $lt: endDate,
           },
-        },
-      },
-    ]);
+        });
 
-    const totalEarnings =
-      userEarnings.length > 0 ? userEarnings[0].totalEarnings : 0;
+        const totalEarnings = _.sumBy(
+          listWorkCompleted,
+          (work) => work.amount - work.payment_amount
+        );
+
+        earningsByMonth.push({
+          value: totalEarnings,
+          frontColor: "#006DFF",
+          gradientColor: "#009FFF",
+          spacing: 20,
+          label: `T-${("0" + (month + 1)).slice(-2)}`,
+        });
+      }
+
+      // else if (user.role === "employee") {
+      //   listWorkCompleted = await WorkSessionModel.find({
+      //     employee_id: id,
+      //     status: "completed",
+      //     isDeleted: false,
+      //     created_at: {
+      //       $gte: startDate,
+      //       $lt: endDate,
+      //     },
+      //   });
+
+      //   const totalEarnings = _.sumBy(listWorkCompleted, "payment_amount");
+
+      //   earningsByMonth.push({
+      //     value: totalEarnings,
+      //     frontColor: "#006DFF",
+      //     gradientColor: "#009FFF",
+      //     spacing: 20,
+      //     label: `T-${("0" + (month + 1)).slice(-2)}`,
+      //   });
+      // }
+      else {
+        return res.status(403).json({
+          message: "Bạn không có quyền truy cập thông tin này",
+        });
+      }
+    }
 
     res.status(200).json({
-      message: "Tính toán thu nhập thành công",
-      totalEarnings,
+      message: "Tính toán thu nhập theo tháng thành công",
+      data: earningsByMonth,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Đã có lỗi xảy ra",
+      error: error.message,
+    });
+  }
+};
+
+const getMonthlyEarningAmounts = async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "ID nhân viên không được cung cấp",
+    });
+  }
+
+  try {
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Người dùng không tồn tại",
+      });
+    }
+
+    const currentYear = new Date().getFullYear();
+    const earningsByMonth = [];
+
+    for (let month = 0; month < 12; month++) {
+      const startDate = new Date(currentYear, month, 1);
+      const endDate = new Date(currentYear, month + 1, 1);
+
+      let listWorkCompleted;
+
+      if (user.role === "admin") {
+        listWorkCompleted = await WorkSessionModel.find({
+          status: "completed",
+          isDeleted: false,
+          created_at: {
+            $gte: startDate,
+            $lt: endDate,
+          },
+        });
+
+        const totalEarnings = _.sumBy(listWorkCompleted, "amount");
+
+        earningsByMonth.push({
+          value: totalEarnings,
+          frontColor: "#006DFF",
+          gradientColor: "#009FFF",
+          spacing: 20,
+          label: `T-${("0" + (month + 1)).slice(-2)}`,
+        });
+      }
+
+      // else if (user.role === "employee") {
+      //   listWorkCompleted = await WorkSessionModel.find({
+      //     employee_id: id,
+      //     status: "completed",
+      //     isDeleted: false,
+      //     created_at: {
+      //       $gte: startDate,
+      //       $lt: endDate,
+      //     },
+      //   });
+
+      //   const totalEarnings = _.sumBy(listWorkCompleted, "payment_amount");
+
+      //   earningsByMonth.push({
+      //     value: totalEarnings,
+      //     frontColor: "#006DFF",
+      //     gradientColor: "#009FFF",
+      //     spacing: 20,
+      //     label: `T-${("0" + (month + 1)).slice(-2)}`,
+      //   });
+      // }
+      else {
+        return res.status(403).json({
+          message: "Bạn không có quyền truy cập thông tin này",
+        });
+      }
+    }
+
+    res.status(200).json({
+      message: "Tính toán thu nhập theo tháng thành công",
+      data: earningsByMonth,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Đã có lỗi xảy ra",
+      error: error.message,
+    });
+  }
+};
+const getMonthlyEarningPaymentAmounts = async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "ID nhân viên không được cung cấp",
+    });
+  }
+
+  try {
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Người dùng không tồn tại",
+      });
+    }
+
+    const currentYear = new Date().getFullYear();
+    const earningsByMonth = [];
+
+    for (let month = 0; month < 12; month++) {
+      const startDate = new Date(currentYear, month, 1);
+      const endDate = new Date(currentYear, month + 1, 1);
+
+      let listWorkCompleted;
+
+      if (user.role === "admin") {
+        listWorkCompleted = await WorkSessionModel.find({
+          status: "completed",
+          isDeleted: false,
+          created_at: {
+            $gte: startDate,
+            $lt: endDate,
+          },
+        });
+
+        const totalEarnings = _.sumBy(listWorkCompleted, "payment_amount");
+
+        earningsByMonth.push({
+          value: totalEarnings,
+          frontColor: "#006DFF",
+          gradientColor: "#009FFF",
+          spacing: 20,
+          label: `T-${("0" + (month + 1)).slice(-2)}`,
+        });
+      }
+
+      // else if (user.role === "employee") {
+      //   listWorkCompleted = await WorkSessionModel.find({
+      //     employee_id: id,
+      //     status: "completed",
+      //     isDeleted: false,
+      //     created_at: {
+      //       $gte: startDate,
+      //       $lt: endDate,
+      //     },
+      //   });
+
+      //   const totalEarnings = _.sumBy(listWorkCompleted, "payment_amount");
+
+      //   earningsByMonth.push({
+      //     value: totalEarnings,
+      //     frontColor: "#006DFF",
+      //     gradientColor: "#009FFF",
+      //     spacing: 20,
+      //     label: `T-${("0" + (month + 1)).slice(-2)}`,
+      //   });
+      // }
+      else {
+        return res.status(403).json({
+          message: "Bạn không có quyền truy cập thông tin này",
+        });
+      }
+    }
+
+    res.status(200).json({
+      message: "Tính toán thu nhập theo tháng thành công",
+      data: earningsByMonth,
     });
   } catch (error) {
     res.status(500).json({
@@ -388,4 +584,7 @@ export {
   getListUsers,
   softDeleteUser,
   getMoneyUserEarn,
+  getMonthlyEarnings,
+  getMonthlyEarningAmounts,
+  getMonthlyEarningPaymentAmounts,
 };

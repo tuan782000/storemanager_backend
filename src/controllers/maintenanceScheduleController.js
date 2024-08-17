@@ -176,6 +176,7 @@ const softDeleteMaintenanceSchedule = async (req, res) => {
   }
 };
 
+// [AxiosError: Request failed with status code 404]
 const getMaintenanceScheduleByEmployeeId = async (req, res) => {
   const { employee_id } = req.query;
 
@@ -193,7 +194,8 @@ const getMaintenanceScheduleByEmployeeId = async (req, res) => {
         });
       } else {
         res.status(404).json({
-          message: "Không tìm thấy lịch bảo trì với employee_id này",
+          message: "Chưa có lịch bảo trì",
+          // data: [],
         });
       }
     } catch (error) {

@@ -1,3 +1,4 @@
+import { MaintenanceScheduleModel } from "../models/maintenanceScheduleModel.js";
 import { WorkSessionModel } from "../models/workSessionModel.js";
 
 const getWorkSessionById = async (req, res) => {
@@ -56,13 +57,14 @@ const createWorkSession = async (req, res) => {
     end_time,
     result = null,
     amount,
+    payment_amount,
     before_images = [],
     after_images = [],
     maintenance_schedule = null,
     description,
   } = req.body;
 
-  const payment_amount = amount * 0.3;
+  let calc_payment_amount = (amount * payment_amount) / 100;
 
   try {
     const newWorkSession = new WorkSessionModel({
@@ -72,7 +74,7 @@ const createWorkSession = async (req, res) => {
       end_time,
       result,
       amount,
-      payment_amount,
+      payment_amount: calc_payment_amount,
       before_images,
       after_images,
       maintenance_schedule,
@@ -112,10 +114,11 @@ const updateWorkSession = async (req, res) => {
     maintenance_schedule,
     description,
     status,
+    rejection_reason,
   } = req.body;
 
-  console.log(id);
-  console.log(result, status);
+  // console.log(id);
+  // console.log(result, status);
 
   if (id) {
     try {
@@ -132,11 +135,10 @@ const updateWorkSession = async (req, res) => {
           maintenance_schedule,
           description,
           status,
+          rejection_reason,
         },
         { new: true }
       );
-
-      console.log(updateWorkSession);
 
       if (updateWorkSession) {
         res.status(200).json({
@@ -161,24 +163,67 @@ const updateWorkSession = async (req, res) => {
   }
 };
 
+// const softDeleteWorkSession = async (req, res) => {
+//   const { id } = req.query;
+
+//   if (id) {
+//     try {
+//       const deletedWorkSession = await WorkSessionModel.findByIdAndUpdate(
+//         id,
+//         { isDeleted: true, deletedAt: Date.now() },
+//         { new: true }
+//       );
+
+//       res.status(200).json({
+//         message: "Xóa phiên làm việc thành công",
+//         data: deletedWorkSession,
+//       });
+//     } catch (error) {
+//       res.status(500).json({
+//         message: "Lỗi khi xóa phiên làm việc",
+//         error: error.message,
+//       });
+//     }
+//   } else {
+//     res.status(400).json({
+//       message: "ID phiên làm việc không được cung cấp",
+//     });
+//   }
+// };
+
 const softDeleteWorkSession = async (req, res) => {
   const { id } = req.query;
 
   if (id) {
     try {
+      // Xoá mềm phiên làm việc
       const deletedWorkSession = await WorkSessionModel.findByIdAndUpdate(
         id,
         { isDeleted: true, deletedAt: Date.now() },
         { new: true }
       );
 
+      if (deletedWorkSession) {
+        // Tìm và xoá mềm lịch bảo trì liên quan đến phiên làm việc này
+        const deletedMaintenanceSchedule =
+          await MaintenanceScheduleModel.findOneAndUpdate(
+            { work_session_id: id },
+            { isDeleted: true, deletedAt: Date.now() },
+            { new: true }
+          );
+
+        if (!deletedMaintenanceSchedule) {
+          console.log("Phiên làm việc này chưa có lịch bảo trì.");
+        }
+      }
+
       res.status(200).json({
-        message: "Xóa phiên làm việc thành công",
+        message: "Xóa phiên làm việc thành công, và lịch bảo trì (nếu có)",
         data: deletedWorkSession,
       });
     } catch (error) {
       res.status(500).json({
-        message: "Lỗi khi xóa phiên làm việc",
+        message: "Lỗi khi xóa phiên làm việc hoặc lịch bảo trì",
         error: error.message,
       });
     }
@@ -222,6 +267,45 @@ const getWorkSessionsByEmployeeId = async (req, res) => {
   }
 };
 
+const updateWorkSessionByAdmin = async (req, res) => {
+  const { id } = req.query;
+  const { amount, payment_amount } = req.body;
+
+  let calc_payment_amount = (amount * payment_amount) / 100;
+
+  if (id) {
+    try {
+      const updateWorkSession = await WorkSessionModel.findByIdAndUpdate(
+        { _id: id, isDeleted: false },
+        {
+          amount,
+          payment_amount: calc_payment_amount,
+        },
+        { new: true }
+      );
+      if (updateWorkSession) {
+        res.status(200).json({
+          message: "Cập nhật thông tin phiên làm việc thành công",
+          data: updateWorkSession,
+        });
+      } else {
+        res.status(404).json({
+          message: "Phiên làm việc không tồn tại hoặc đã bị xóa",
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "Lỗi khi tìm kiếm thông",
+        error: error.message,
+      });
+    }
+  } else {
+    res.status(400).json({
+      message: "Id phiên làm việc không được cung cấp",
+    });
+  }
+};
+
 export {
   getWorkSessionById,
   getListWorkSession,
@@ -229,4 +313,5 @@ export {
   updateWorkSession,
   softDeleteWorkSession,
   getWorkSessionsByEmployeeId,
+  updateWorkSessionByAdmin,
 };

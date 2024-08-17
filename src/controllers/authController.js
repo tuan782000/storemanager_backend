@@ -69,6 +69,12 @@ const login = async (req, res) => {
       });
     }
 
+    if (password.length < 6) {
+      return res.status(403).json({
+        message: "Vui lòng kiểm tra lại email hoặc password!!!",
+      });
+    }
+
     const isMatchPassword = await bcrypt.compare(
       password,
       checkExistingEmail.password
