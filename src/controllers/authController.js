@@ -56,19 +56,16 @@ const register = async (req, res) => {
 const login = async (req, res) => {
 	try {
 		const { username, password } = req.body;
-		const checkExistingEmail = await UserModel.findOne({
+		const user = await UserModel.findOne({
 			username,
 			isDeleted: false,
 		});
 
-		if (!checkExistingEmail) {
+		if (!user) {
 			throw new Error('Tài khoản không tồn tại');
 		}
 
-		const isMatchPassword = await bcrypt.compare(
-			password,
-			checkExistingEmail.password
-		);
+		const isMatchPassword = await bcrypt.compare(password, user.password);
 
 		if (!isMatchPassword) {
 			throw new Error(
@@ -76,16 +73,13 @@ const login = async (req, res) => {
 			);
 		}
 
+		delete user.password;
 		res.status(200).json({
 			message: 'Đăng nhập thành công',
 
 			data: {
-				id: checkExistingEmail.id,
-				email: checkExistingEmail.email,
-				accesstoken: await getJsonWebToken(
-					checkExistingEmail.email,
-					checkExistingEmail.id
-				),
+				...user._doc,
+				accesstoken: await getJsonWebToken(user.email, user.id),
 			},
 		});
 	} catch (error) {

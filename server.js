@@ -25,9 +25,6 @@ app.use('/user', userRouter);
 app.use('/customer', customerRouter);
 app.use('/worksession', workSessionRouter);
 app.use('/comment', commentRouter);
-app.use('/maintenanceSchedule', maintenanceScheduleRouter);
-
-// app.use(errorMiddleHandle);
 
 connectDB()
 	.then(() => {
