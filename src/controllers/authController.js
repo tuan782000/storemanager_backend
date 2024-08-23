@@ -55,24 +55,14 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
 	try {
-		const { email, password } = req.body;
-
+		const { username, password } = req.body;
 		const checkExistingEmail = await UserModel.findOne({
-			email,
+			username,
 			isDeleted: false,
 		});
-		//   console.log(checkExistingEmail);
 
 		if (!checkExistingEmail) {
-			return res.status(403).json({
-				message: 'Vui lòng kiểm tra lại email hoặc password!!!',
-			});
-		}
-
-		if (password.length < 6) {
-			return res.status(403).json({
-				message: 'Vui lòng kiểm tra lại email hoặc password!!!',
-			});
+			throw new Error('Tài khoản không tồn tại');
 		}
 
 		const isMatchPassword = await bcrypt.compare(
@@ -81,23 +71,26 @@ const login = async (req, res) => {
 		);
 
 		if (!isMatchPassword) {
-			return res.status(401).json({
-				message: 'Vui lòng kiểm tra lại email hoặc password!!!',
-			});
+			throw new Error(
+				'Đăng nhập thất bại, vui lòng kiểm tra lại Tên đăng nhập hoặc mật khẩu và thử lại!!!'
+			);
 		}
 
 		res.status(200).json({
 			message: 'Đăng nhập thành công',
+
 			data: {
 				id: checkExistingEmail.id,
 				email: checkExistingEmail.email,
-				accesstoken: await getJsonWebToken(email, checkExistingEmail.id),
+				accesstoken: await getJsonWebToken(
+					checkExistingEmail.email,
+					checkExistingEmail.id
+				),
 			},
 		});
 	} catch (error) {
-		res.status(500).json({
-			message: 'Đã xảy ra lỗi khi đăng nhập',
-			error: error.message,
+		res.status(404).json({
+			message: error.message,
 		});
 	}
 };

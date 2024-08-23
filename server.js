@@ -4,7 +4,6 @@ import express from 'express';
 import cors from 'cors';
 import { authRouter } from './src/routes/authRouter.js';
 import { connectDB } from './src/configs/connectDB.js';
-import { errorMiddleHandle } from './src/middlewares/errorMiddleware.js';
 import { userRouter } from './src/routes/userRouter.js';
 import { customerRouter } from './src/routes/customerRouter.js';
 import { workSessionRouter } from './src/routes/workSessionRouter.js';
@@ -17,19 +16,18 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = 7820;
+const PORT = 3001;
 
 app.use('/auth', authRouter);
 
 app.use(verifyToken);
-
 app.use('/user', userRouter);
 app.use('/customer', customerRouter);
 app.use('/worksession', workSessionRouter);
 app.use('/comment', commentRouter);
 app.use('/maintenanceSchedule', maintenanceScheduleRouter);
 
-app.use(errorMiddleHandle);
+// app.use(errorMiddleHandle);
 
 connectDB()
 	.then(() => {

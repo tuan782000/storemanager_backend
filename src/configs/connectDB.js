@@ -1,5 +1,7 @@
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+/** @format */
+
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -7,14 +9,14 @@ dotenv.config();
 const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@dienlanhvn2407.xanvnbu.mongodb.net/${process.env.DATABASE_NAME}?retryWrites=true&w=majority&appName=Dienlanhvn2407`;
 
 const connectDB = async () => {
-  try {
-    const connection = await mongoose.connect(dbUrl);
-    // console.log(connection.connection);
-    console.log(`Connect to mongodb successfully!!!`);
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
-  }
+	try {
+		const connection = await mongoose.connect(dbUrl);
+		// console.log(connection.connection);
+		console.log(`Connect to mongodb successfully!!!`);
+	} catch (error) {
+		console.log(error);
+		process.exit(1);
+	}
 };
 
 export { connectDB };
